@@ -6,7 +6,8 @@ module OpenAI
 
     attr_reader :access_token, :organization_id, :uri_base, :request_timeout
 
-    def initialize(access_token: nil, organization_id: NULL_ORGANIZATION_ID, uri_base: nil, request_timeout: nil)
+    def initialize(access_token: nil, organization_id: NULL_ORGANIZATION_ID, uri_base: nil,
+                   request_timeout: nil)
       @access_token = access_token || OpenAI.configuration.access_token
       @organization_id = if organization_id == NULL_ORGANIZATION_ID
                            OpenAI.configuration.organization_id
