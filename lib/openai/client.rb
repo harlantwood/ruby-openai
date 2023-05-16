@@ -2,14 +2,13 @@ module OpenAI
   class Client
     include OpenAI::HTTP
 
-    attr_reader :access_token, :organization_id, :uri_base, :request_timeout
+    attr_reader :access_token, :organization_id, :request_timeout, :uri_base
 
-    def initialize(access_token: nil, organization_id: nil, uri_base: nil,
-                   request_timeout: nil)
+    def initialize(access_token: nil, organization_id: nil, request_timeout: nil, uri_base: nil)
       @access_token = access_token || OpenAI.configuration.access_token
       @organization_id = organization_id || OpenAI.configuration.organization_id
-      @uri_base = uri_base || OpenAI.configuration.uri_base
       @request_timeout = request_timeout || OpenAI.configuration.request_timeout
+      @uri_base = uri_base || OpenAI.configuration.uri_base
     end
 
     def chat(parameters: {})
