@@ -64,13 +64,13 @@ module OpenAI
 
     def conn(multipart: false)
       Faraday.new do |f|
-        f.options[:timeout] = OpenAI.configuration.request_timeout
+        f.options[:timeout] = @request_timeout
         f.request(:multipart) if multipart
       end
     end
 
     def uri(path:)
-      OpenAI.configuration.uri_base + OpenAI.configuration.api_version + path
+      @uri_base + OpenAI.configuration.api_version + path
     end
 
     def headers
