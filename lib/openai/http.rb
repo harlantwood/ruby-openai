@@ -1,3 +1,5 @@
+require "amazing_print"
+
 module OpenAI
   module HTTP
     def get(path:)
@@ -52,14 +54,43 @@ module OpenAI
     #
     # @param user_proc [Proc] The inner proc to call for each JSON object in the chunk.
     # @return [Proc] An outer proc that iterates over a raw stream, converting it to JSON.
+    #
+    # ACUAL ERROR RESPONSE:
+    # {
+    #     "error": {
+    #         "message": "",
+    #         "type": "invalid_request_error",
+    #         "param": null,
+    #         "code": "invalid_api_key"
+    #     }
+    # }
     def to_json_stream(user_proc:)
       proc do |chunk, _|
-        chunk.scan(/(?:data|error): (\{.*\})/i).flatten.each do |data|
-          user_proc.call(JSON.parse(data))
-        rescue JSON::ParserError
-          # Ignore invalid JSON.
+        ap "chunk:"
+        puts chunk
+
+        results = chunk.scan(/(^data|^error): *(\{.*\})/i)
+        if results.length > 0
+          results.each do |result_type, result_json|
+            result = JSON.parse(result_json)
+            result.merge!("result_type" => result_type)
+            ap "result:"
+            ap result
+            user_proc.call(result)
+          end
+        else
+          result = JSON.parse(chunk)
+          result_type = result["error"] ? "error" : "unkown"
+          result.merge!("result_type" => result_type)
+          user_proc.call(result)
         end
       end
+    rescue JSON::ParserError
+      result = {
+        "result_type" => "invalid_json",
+        "chunk" => chunk
+      }
+      user_proc.call(result)
     end
 
     def conn(multipart: false)
