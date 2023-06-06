@@ -105,16 +105,25 @@ RSpec.describe OpenAI::HTTP do
 
       context "when called with a string containing a single JSON object" do
         it "calls the user proc with the data parsed as JSON" do
-          expect(user_proc).to receive(:call).with(JSON.parse('{"foo": "bar"}'))
+          expect(user_proc).to receive(:call).with({ "foo" => "bar", "result_type" => "data" })
           stream.call('data: { "foo": "bar" }')
         end
       end
 
       context "when called with string containing more than one JSON object" do
         it "calls the user proc for each data parsed as JSON" do
-          expect(user_proc).to receive(:call).with(JSON.parse('{"foo": "bar"}'))
-          expect(user_proc).to receive(:call).with(JSON.parse('{"baz": "qud"}'))
+          expect(user_proc).to receive(:call).with({ "foo" => "bar", "result_type" => "data" })
+          expect(user_proc).to receive(:call).with({ "baz" => "qud", "result_type" => "data" })
 
+          p("CHUNK 000")
+          puts(<<-CHUNK)
+            data: { "foo": "bar" }
+
+            data: { "baz": "qud" }
+
+            data: [DONE]
+
+          CHUNK
           stream.call(<<-CHUNK)
             data: { "foo": "bar" }
 
@@ -146,14 +155,13 @@ RSpec.describe OpenAI::HTTP do
         end
 
         it "does not raise an error" do
-          expect(user_proc).to receive(:call).with(JSON.parse('{"foo": "bar"}'))
+          expect(user_proc).to receive(:call).with({ "foo" => "bar", "result_type" => "data" })
 
           expect do
             stream.call(chunk)
           end.not_to raise_error
         end
       end
-
       context "when called with a string containing an error" do
         let(:chunk) do
           <<-CHUNK
@@ -163,9 +171,9 @@ RSpec.describe OpenAI::HTTP do
         end
 
         it "does not raise an error" do
-          expect(user_proc).to receive(:call).with(JSON.parse('{ "foo": "bar" }'))
+          expect(user_proc).to receive(:call).with({ "foo" => "bar", "result_type" => "data" })
           expect(user_proc).to receive(:call).with(
-            JSON.parse('{ "message": "A bad thing has happened!" }')
+            { "message" => "A bad thing has happened!", "result_type" => "error" }
           )
 
           expect do
@@ -173,6 +181,17 @@ RSpec.describe OpenAI::HTTP do
           end.not_to raise_error
         end
       end
+
+      # add test for:
+      # ACUAL ERROR RESPONSE - full chunk:
+      # {
+      #     "error": {
+      #         "message": "",
+      #         "type": "invalid_request_error",
+      #         "param": null,
+      #         "code": "invalid_api_key"
+      #     }
+      # }
     end
   end
 
