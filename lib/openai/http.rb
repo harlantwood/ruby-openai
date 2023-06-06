@@ -77,6 +77,12 @@ module OpenAI
             ap "result:"
             ap result
             user_proc.call(result)
+          rescue JSON::ParserError
+            result = {
+              "result_type" => "invalid_json",
+              "chunk" => result_json
+            }
+            user_proc.call(result)
           end
         else
           result = JSON.parse(chunk)
@@ -84,13 +90,13 @@ module OpenAI
           result.merge!("result_type" => result_type)
           user_proc.call(result)
         end
+      rescue JSON::ParserError
+        result = {
+          "result_type" => "invalid_json",
+          "chunk" => chunk
+        }
+        user_proc.call(result)
       end
-    rescue JSON::ParserError
-      result = {
-        "result_type" => "invalid_json",
-        "chunk" => chunk
-      }
-      user_proc.call(result)
     end
 
     def conn(multipart: false)
