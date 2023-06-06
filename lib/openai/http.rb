@@ -69,27 +69,6 @@ module OpenAI
         ap "chunk:"
         puts chunk
 
-        # lines = chunk.split("\n").map(&:strip).reject(&:empty?)
-        # results = lines.map do |line|
-        #   match = line.match(/^(data|error): *(\{.+\})/i)
-        #   result_type = match[1]
-        #   result_json = match[2]
-        #   result = JSON.parse(result_json)
-        #   result.merge!("result_type" => result_type)
-        #   ap "result:"
-        #   ap result
-        #   user_proc.call(result)
-        # rescue JSON::ParserError
-        #   # Ignore invalid JSON.
-        # end.compact
-
-        # result = {
-        #   "result_type" => "invalid_json",
-        #   "chunk" => chunk,
-        #   "sub_chunk" => result_json
-        # }
-        # user_proc.call(result)
-
         results = chunk.scan(/^(data|error): *(\{.+\})/i)
         if results.length > 0
           results.each do |result_type, result_json|
