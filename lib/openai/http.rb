@@ -69,7 +69,7 @@ module OpenAI
         ap "chunk:"
         puts chunk
 
-        results = chunk.scan(/(^data|^error): *(\{.*\})/i)
+        results = chunk.scan(/^(data|error): *(\{.+\})/i)
         if results.length > 0
           results.each do |result_type, result_json|
             result = JSON.parse(result_json)
@@ -78,11 +78,12 @@ module OpenAI
             ap result
             user_proc.call(result)
           rescue JSON::ParserError
-            result = {
-              "result_type" => "invalid_json",
-              "chunk" => result_json
-            }
-            user_proc.call(result)
+            # result = {
+            #   "result_type" => "invalid_json",
+            #   "chunk" => chunk,
+            #   "sub_chunk" => result_json
+            # }
+            # user_proc.call(result)
           end
         else
           result = JSON.parse(chunk)
@@ -92,7 +93,7 @@ module OpenAI
         end
       rescue JSON::ParserError
         result = {
-          "result_type" => "invalid_json",
+          "result_type" => "unkown",
           "chunk" => chunk
         }
         user_proc.call(result)
