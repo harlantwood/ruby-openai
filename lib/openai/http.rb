@@ -55,7 +55,7 @@ module OpenAI
     # @param user_proc [Proc] The inner proc to call for each JSON object in the chunk.
     # @return [Proc] An outer proc that iterates over a raw stream, converting it to JSON.
     #
-    # ACUAL ERROR RESPONSE:
+    # ACUAL ERROR RESPONSE - full chunk:
     # {
     #     "error": {
     #         "message": "",
@@ -69,6 +69,27 @@ module OpenAI
         ap "chunk:"
         puts chunk
 
+        # lines = chunk.split("\n").map(&:strip).reject(&:empty?)
+        # results = lines.map do |line|
+        #   match = line.match(/^(data|error): *(\{.+\})/i)
+        #   result_type = match[1]
+        #   result_json = match[2]
+        #   result = JSON.parse(result_json)
+        #   result.merge!("result_type" => result_type)
+        #   ap "result:"
+        #   ap result
+        #   user_proc.call(result)
+        # rescue JSON::ParserError
+        #   # Ignore invalid JSON.
+        # end.compact
+
+        # result = {
+        #   "result_type" => "invalid_json",
+        #   "chunk" => chunk,
+        #   "sub_chunk" => result_json
+        # }
+        # user_proc.call(result)
+
         results = chunk.scan(/^(data|error): *(\{.+\})/i)
         if results.length > 0
           results.each do |result_type, result_json|
@@ -78,14 +99,9 @@ module OpenAI
             ap result
             user_proc.call(result)
           rescue JSON::ParserError
-            # result = {
-            #   "result_type" => "invalid_json",
-            #   "chunk" => chunk,
-            #   "sub_chunk" => result_json
-            # }
-            # user_proc.call(result)
+            # Ignore invalid JSON.
           end
-        else
+        elsif !chunk.match(/^(data|error):/i)
           result = JSON.parse(chunk)
           result_type = result["error"] ? "error" : "unkown"
           result.merge!("result_type" => result_type)
