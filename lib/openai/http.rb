@@ -70,7 +70,7 @@ module OpenAI
           rescue JSON::ParserError
             # Ignore invalid JSON.
           end
-        elsif !chunk.match(/^(data|error):/i)
+        elsif !chunk.match(/^\s*(data|error):/i)
           begin
             result = JSON.parse(chunk)
             result_type = result["error"] ? "error" : "unkown"
