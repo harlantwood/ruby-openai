@@ -12,6 +12,7 @@ module OpenAI
       uri_base
       request_timeout
       extra_headers
+      custom_path
     ].freeze
     attr_reader *CONFIG_KEYS, :faraday_middleware
 

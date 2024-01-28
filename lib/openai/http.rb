@@ -90,6 +90,8 @@ module OpenAI
         "#{base}?api-version=#{@api_version}"
       elsif @uri_base.include?(@api_version)
         File.join(@uri_base, path)
+      elsif @custom_path
+        File.join(@uri_base, @custom_path)
       else
         File.join(@uri_base, @api_version, path)
       end

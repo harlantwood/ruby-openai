@@ -47,7 +47,8 @@ module OpenAI
                   :organization_id,
                   :uri_base,
                   :request_timeout,
-                  :extra_headers
+                  :extra_headers,
+                  :custom_path
 
     DEFAULT_API_VERSION = "v1".freeze
     DEFAULT_URI_BASE = "https://api.openai.com/".freeze
@@ -61,6 +62,7 @@ module OpenAI
       @log_errors = DEFAULT_LOG_ERRORS
       @organization_id = nil
       @uri_base = DEFAULT_URI_BASE
+      @custom_path = nil
       @request_timeout = DEFAULT_REQUEST_TIMEOUT
       @extra_headers = {}
     end
